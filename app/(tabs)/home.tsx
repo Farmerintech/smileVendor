@@ -89,7 +89,7 @@ export default function CreateStoreWizard() {
 
     SECTIONS.forEach((s) => {
       result[s.key] = s.fields.every((f) => {
-        const v = (form as any)[f];
+        const v:any = (form as any)[f];
         if (Array.isArray(v)) return v.length > 0;
         return v !== "" && v !== null && v !== undefined;
       });
@@ -213,21 +213,21 @@ function renderSectionFields(
     case "A":
       return (
         <>
-          <Input label="Vendor ID" v={form.vendorId} c={(v) => update("vendorId", v)} />
-          <Input label="Store Name" v={form.name} c={(v) => update("name", v)} />
-          <Input label="Description" v={form.description} c={(v) => update("description", v)} />
-          <Input label="Official Email" v={form.officialEmail} c={(v) => update("officialEmail", v)} />
-          <Input label="Official Phone" v={form.officialPhone} c={(v) => update("officialPhone", v)} />
-          <Input label="Vendor Type" v={form.vendorType} c={(v) => update("vendorType", v)} />
-          <Input label="Delivery Type" v={form.deliveryType} c={(v) => update("deliveryType", v)} />
+          {/* <Input label="Vendor ID" v={form.vendorId} c={(v:) => update("vendorId", v)} /> */}
+          <Input label="Store Name" v={form.name} c={(v:string) => update("name", v)} />
+          <Input label="Description" v={form.description} c={(v:string) => update("description", v)} />
+          <Input label="Official Email" v={form.officialEmail} c={(v:string) => update("officialEmail", v)} />
+          <Input label="Official Phone" v={form.officialPhone} c={(v:string) => update("officialPhone", v)} />
+          <Input label="Vendor Type" v={form.vendorType} c={(v:string) => update("vendorType", v)} />
+          <Input label="Delivery Type" v={form.deliveryType} c={(v:string) => update("deliveryType", v)} />
         </>
       );
     case "B":
       return (
         <>
-          <Input label="Bank Name" v={form.bankName} c={(v) => update("bankName", v)} />
-          <Input label="Account Number" v={form.accountNumber} c={(v) => update("accountNumber", v)} />
-          <Input label="Account Name" v={form.accountName} c={(v) => update("accountName", v)} />
+          <Input label="Bank Name" v={form.bankName} c={(v:string) => update("bankName", v)} />
+          <Input label="Account Number" v={form.accountNumber} c={(v:string) => update("accountNumber", v)} />
+          <Input label="Account Name" v={form.accountName} c={(v:string) => update("accountName", v)} />
         </>
       );
     case "C":
@@ -236,20 +236,20 @@ function renderSectionFields(
           <Input
             label="Opening Days (Mon,Tue)"
             v={form.openingDays.join(",")}
-            c={(v) => update("openingDays", v.split(","))}
+            c={(v:string) => update("openingDays", v.split(","))}
           />
-          <Input label="Opening Time" v={form.openingTime} c={(v) => update("openingTime", v)} />
-          <Input label="Closing Time" v={form.closingTime} c={(v) => update("closingTime", v)} />
+          <Input label="Opening Time" v={form.openingTime} c={(v:string) => update("openingTime", v)} />
+          <Input label="Closing Time" v={form.closingTime} c={(v:string) => update("closingTime", v)} />
         </>
       );
     case "D":
       return (
         <>
-          <Input label="Street" v={form.street} c={(v) => update("street", v)} />
-          <Input label="City" v={form.city} c={(v) => update("city", v)} />
-          <Input label="State" v={form.state} c={(v) => update("state", v)} />
-          <Input label="Latitude" v={form.lat} c={(v) => update("lat", v)} />
-          <Input label="Longitude" v={form.long} c={(v) => update("long", v)} />
+          <Input label="Street" v={form.street} c={(v:string) => update("street", v)} />
+          <Input label="City" v={form.city} c={(v:string) => update("city", v)} />
+          <Input label="State" v={form.state} c={(v:string) => update("state", v)} />
+          <Input label="Latitude" v={form.lat} c={(v:string) => update("lat", v)} />
+          <Input label="Longitude" v={form.long} c={(v:string) => update("long", v)} />
         </>
       );
   }

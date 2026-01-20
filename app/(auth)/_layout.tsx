@@ -37,9 +37,9 @@ export default function RootLayout() {
   });
    const {user} = useAppStore();
     useEffect(()=>{
-      if(user && user.email!==''){
+      // if(user && user.email!==''){
         router.replace("/(tabs)/home")
-      }
+      // }
     })
   const router = useRouter();
 

@@ -13,12 +13,12 @@
 
 {
   "expo": {
-    "name": "Smile",
+    "name": "Smile Vendor",
     "slug": "smile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/cart.png",
-    "scheme": "smile",
+    "scheme": "vendor",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
 

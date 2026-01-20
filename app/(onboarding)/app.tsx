@@ -1,5 +1,6 @@
 import { useAppStore } from "@/app/store/useAppStore";
 import { Ionicons } from '@expo/vector-icons';
+import { router } from "expo-router";
 import { useEffect } from 'react';
 import { ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -25,6 +26,7 @@ export default function App() {
 
   const handleRider = () => {
     // TODO: Navigate to Rider onboarding or dashboard
+    router.replace("/(tabs)/home")
     console.log("Continue as Rider");
   }
 
