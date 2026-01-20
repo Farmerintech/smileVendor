@@ -21,7 +21,7 @@ export default function TabLayout() {
   const yakub = require('@/assets/images/yakub.jpg');
   const { cart } = useAppStore();
 
-  const moveToCart = () => router.push('/order');
+  const moveToCart = () => router.push('/orders');
 
   // Custom Tab Button
   const CustomTabButton = ({
@@ -79,7 +79,7 @@ export default function TabLayout() {
     >
       {/* HOME */}
       <Tabs.Screen
-        name="home"
+        name="orders"
         options={{
           headerShown: true,
           headerShadowVisible: false,
@@ -120,16 +120,21 @@ export default function TabLayout() {
 
       {/* SEARCH */}
       <Tabs.Screen
-        name="search"
+        name="products"
+        
         options={{
+          headerShown:true,
+          headerTitle:"Products",
           tabBarIcon: ({ focused }) => renderTab(focused, 'cube-outline', 'Products'),
         }}
       />
 
       {/* ORDERS */}
       <Tabs.Screen
-        name="order"
+        name="payout"
         options={{
+          headerShown:true,
+          headerTitle:"Payouts",
           tabBarIcon: ({ focused }) => renderTab(focused, 'wallet-outline', 'Payout'),
         }}
       />
@@ -138,6 +143,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="insight"
         options={{
+          headerShown:true,
+          headerTitle:"Insight",
           tabBarIcon: ({ focused }) => renderTab(focused, 'stats-chart-outline', 'Insight'),
         }}
       />

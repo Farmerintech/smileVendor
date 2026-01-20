@@ -1,271 +1,236 @@
-// screens/Search.tsx
-import { data } from "@/components/data";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+// screens/Insight.tsx
+import { useStatusBar } from "@/hooks/statusBar";
+import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
   FlatList,
-  Image,
-  TextInput,
+  ScrollView,
   TouchableOpacity,
   View
 } from "react-native";
 import "../../global.css";
 import { AppText } from "../_layout";
 
-const items = [
-  "All",
-  "Resturants",
-  "Pharmacies",
-  "Supermarket",
-  "Local Markets",
-  "Packages",
-  "Lugage",
-  "More",
+const timeFilters = [
+  "Today",
+  "Yesterday",
+  "This Week",
+  "This Month",
+  "Other Months",
+  "This Year",
 ];
 
-const Search = () => {
-  const [index, setIndex] = useState(0);
-  const [isModalVisible, setModalVisible] = useState(false);
-  const [img, setImg] = useState<any>();
-  const [price, setPrice] = useState<number>();
+const popularItems = [
+  { name: "Chicken Sandwich", sold: 120 },
+  { name: "Burger", sold: 90 },
+  { name: "Fries", sold: 70 },
+];
 
-  const handleModalOpen = (item: any, price: number) => {
-    setImg(item);
-    setModalVisible(true);
-    setPrice(price);
-  };
+const reviews = [
+  { stars: 5, count: 50 },
+  { stars: 4, count: 30 },
+  { stars: 3, count: 10 },
+  { stars: 2, count: 5 },
+  { stars: 1, count: 2 },
+];
+
+const Insight = () => {
+  const [selectedFilter, setSelectedFilter] = useState(0);
+ useStatusBar("white", "dark-content");  
+
+  // Dummy data for stats
+  const totalOrders = 200;
+  const totalAmount = 500000; // ₦500,000
+  const averageAmount = totalAmount / totalOrders;
 
   return (
-    <>
-      <View style={{ flex: 1, backgroundColor: "#F9FAFB", paddingTop:40 }}>
+    <ScrollView style={{ flex: 1, backgroundColor: "#F9FAFB", paddingTop: 10 }}>
+      {/* 1️⃣ Stats Section */}
+      <View style={{ paddingHorizontal: 16, marginBottom: 20 }}>
+        {/* Time Filter */}
         <FlatList
-          data={data}
-          keyExtractor={(item) => item.storeId.toString()}
-          showsVerticalScrollIndicator={false}
-          stickyHeaderIndices={[0]}
-          contentContainerStyle={{
-            paddingBottom: 150,
-            
-          }}
-          ListHeaderComponent={
-            <View style={{ backgroundColor: "#F9FAFB" }}>
-              {/* Search + Filters */}
-              <View
+          horizontal
+          data={timeFilters}
+          keyExtractor={(item) => item}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 8, marginBottom: 16 }}
+          renderItem={({ item, index }) => {
+            const active = selectedFilter === index;
+            return (
+              <TouchableOpacity
+                onPress={() => setSelectedFilter(index)}
                 style={{
-                  paddingHorizontal: 18,
-                  paddingTop: 10,
-                  backgroundColor: "#F9FAFB",
-                }}
-              >
-                {/* Search Input */}
-                <View
-  className="flex-row items-center shadow rounded-[20px] px-4 py-3 mb-4"
-  style={{
-    backgroundColor: "#F1F5F9", // inputBackground
-  }}
->
-  {/* Search Icon */}
-  <Ionicons
-    name="search-outline"
-    size={20}
-    color="#6B7280" // textSecondary
-  />
-
-  {/* Input */}
-  <TextInput
-    className="flex-1 mx-3 text-[15px]"
-    placeholder="Search vendors around you..."
-    placeholderTextColor="#9CA3AF" // textMuted
-    onChangeText={() => {}}
-    value=""
-    style={{
-      color: "#1A1A1A", // textPrimary
-    }}
-  />
-
-  {/* Filter Button */}
-  <TouchableOpacity
-    activeOpacity={0.85}
-    className="h-10 w-10 items-center justify-center rounded-full"
-    style={{
-      backgroundColor: "#FF6B35", // primaryOrange
-    }}
-  >
-    <Ionicons
-      name="options-outline"
-      size={18}
-      color="#FFFFFF"
-    />
-  </TouchableOpacity>
-</View>
-
-                {/* Category Pills */}
-                <FlatList
-                  data={items}
-                  keyExtractor={(item) => item}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{
-                    gap: 8,
-                    paddingVertical: 14,
-                  }}
-                  renderItem={({ item, index: i }) => {
-                    const active = index === i;
-
-                    return (
-                      <TouchableOpacity
-                        onPress={() => setIndex(i)}
-                        style={{
-                          paddingHorizontal: 14,
-                          height: 32,
-                          borderRadius: 16,
-                          backgroundColor: active ? "#FF6B35" : "#FFFFFF",
-                          borderWidth: 1,
-                          borderColor: active ? "#FF6B35" : "#E5E7EB",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <AppText
-                          style={{
-                            fontSize: 13,
-                            fontWeight: "500",
-                            color: active ? "#FFFFFF" : "#6B7280",
-                          }}
-                        >
-                          {item}
-                        </AppText>
-                      </TouchableOpacity>
-                    );
-                  }}
-                />
-              </View>
-
-              {/* Results Header */}
-              <View
-                style={{
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  backgroundColor: "#FFFFFF",
-                  marginTop: 6,
-                  borderTopLeftRadius: 16,
-                  borderTopRightRadius: 16,
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <AppText
-                    style={{
-                      fontSize: 15,
-                      fontWeight: "500",
-                      color: "#1A1A1A",
-                    }}
-                  >
-                    25 Results for "Chicken"
-                  </AppText>
-
-                  <TouchableOpacity>
-                    <AppText
-                      style={{
-                        fontSize: 14,
-                        fontWeight: "500",
-                        color: "#FF6B35",
-                      }}
-                    >
-                      Clear Search
-                    </AppText>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          }
-          renderItem={({ item }) => (
-            <View
-              style={{
-                backgroundColor: "#FFFFFF",
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                borderBottomWidth: 1,
-                borderBottomColor: "#E5E7EB",
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              {/* Image */}
-              <View
-                style={{
-                  width: 60,
-                  height: 60,
+                  paddingHorizontal: 14,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: active ? "#FF6B35" : "#FFFFFF",
+                  borderWidth: 1,
+                  borderColor: active ? "#FF6B35" : "#E5E7EB",
                   justifyContent: "center",
                   alignItems: "center",
                 }}
               >
-                <Image
-                  source={item.imageUrl}
-                  style={{
-                    width: 50,
-                    height: 50,
-                    resizeMode: "cover",
-                    borderRadius: 12,
-                  }}
-                />
-              </View>
-
-              {/* Info */}
-              <TouchableOpacity
-                style={{ flex: 1, marginLeft: 10 }}
-                onPress={() => {
-                  handleModalOpen(item.imageUrl, item.price);
-                }}
-              >
                 <AppText
                   style={{
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: "500",
-                    color: "#1A1A1A",
+                    color: active ? "#FFFFFF" : "#6B7280",
                   }}
                 >
-                  Chicken Republic - {item.name}
-                </AppText>
-
-                <AppText
-                  style={{
-                    fontSize: 13,
-                    marginTop: 2,
-                    color: "#6B7280",
-                  }}
-                >
-                  From ₦{item.price} · 12m ride
+                  {item}
                 </AppText>
               </TouchableOpacity>
-
-              {/* Favorite */}
-              <MaterialIcons
-                name="favorite-outline"
-                size={22}
-                color="#9CA3AF"
-              />
-            </View>
-          )}
+            );
+          }}
         />
+
+        {/* Stats Cards */}
+        <View style={{ flexDirection: "row", gap: 12, flexWrap: "wrap" }}>
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: "#FFFFFF",
+              borderRadius: 12,
+              padding: 16,
+              minWidth: 150,
+            }}
+          >
+            <AppText style={{ fontSize: 14, color: "#6B7280" }}>Total Orders</AppText>
+            <AppText style={{ fontSize: 18, fontWeight: "600", marginTop: 4 }}>
+              {totalOrders}
+            </AppText>
+          </View>
+
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: "#FFFFFF",
+              borderRadius: 12,
+              padding: 16,
+              minWidth: 150,
+            }}
+          >
+            <AppText style={{ fontSize: 14, color: "#6B7280" }}>Total Earned</AppText>
+            <AppText style={{ fontSize: 18, fontWeight: "600", marginTop: 4 }}>
+              ₦{totalAmount.toLocaleString()}
+            </AppText>
+          </View>
+
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: "#FFFFFF",
+              borderRadius: 12,
+              padding: 16,
+              minWidth: 150,
+            }}
+          >
+            <AppText style={{ fontSize: 14, color: "#6B7280" }}>Average Order</AppText>
+            <AppText style={{ fontSize: 18, fontWeight: "600", marginTop: 4 }}>
+              ₦{averageAmount.toFixed(0).toLocaleString()}
+            </AppText>
+          </View>
+        </View>
       </View>
 
-      {/* Cart Modal
-      <CartModal
-        visible={isModalVisible}
-        onRequestClose={() => setModalVisible(false)}
-        source={img}
-        price={price || 0}
-        count={0}
-      /> */}
-    </>
+      {/* 2️⃣ Most Popular Items Table */}
+      <View style={{ paddingHorizontal: 16, marginBottom: 20 }}>
+        <AppText style={{ fontSize: 18, fontWeight: "600", marginBottom: 12 }}>
+          Most Popular Items
+        </AppText>
+
+        {/* Table Header */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            paddingVertical: 12,
+            paddingHorizontal: 16,
+            borderBottomWidth: 1,
+            borderBottomColor: "#E5E7EB",
+            marginBottom: 8,
+          }}
+        >
+          <AppText style={{ flex: 1, fontWeight: "600", fontSize: 14 }}>Item</AppText>
+          <AppText style={{ flex: 1, fontWeight: "600", fontSize: 14, textAlign: "right" }}>Sold</AppText>
+        </View>
+
+        {/* Table Rows */}
+        {popularItems.map((item, i) => (
+          <View
+            key={i}
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              backgroundColor: "#FFFFFF",
+              borderRadius: 12,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              marginBottom: 8,
+              borderWidth: 1,
+              borderColor: "#E5E7EB",
+              alignItems: "center",
+            }}
+          >
+            <AppText style={{ flex: 1, fontSize: 14 }}>{item.name}</AppText>
+            <AppText style={{ flex: 1, fontSize: 14, fontWeight: "600", textAlign: "right" }}>
+              {item.sold}
+            </AppText>
+          </View>
+        ))}
+      </View>
+
+      {/* 3️⃣ Reviews Table */}
+      <View style={{ paddingHorizontal: 16, marginBottom: 30 }}>
+        <AppText style={{ fontSize: 18, fontWeight: "600", marginBottom: 12 }}>
+          Reviews
+        </AppText>
+
+        {/* Table Header */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            paddingVertical: 12,
+            paddingHorizontal: 16,
+            borderBottomWidth: 1,
+            borderBottomColor: "#E5E7EB",
+            marginBottom: 8,
+          }}
+        >
+          <AppText style={{ flex: 1, fontWeight: "600", fontSize: 14 }}>Stars</AppText>
+          <AppText style={{ flex: 1, fontWeight: "600", fontSize: 14, textAlign: "right" }}>Count</AppText>
+        </View>
+
+        {/* Table Rows */}
+        {reviews.map((r) => (
+          <View
+            key={r.stars}
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              backgroundColor: "#FFFFFF",
+              borderRadius: 12,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              marginBottom: 8,
+              borderWidth: 1,
+              borderColor: "#E5E7EB",
+              alignItems: "center",
+            }}
+          >
+            <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <AppText style={{ fontSize: 14 }}>{r.stars} Star</AppText>
+              <Ionicons name="star" size={14} color="#FFB800" />
+            </View>
+            <AppText style={{ flex: 1, fontSize: 14, fontWeight: "600", textAlign: "right" }}>
+              {r.count}
+            </AppText>
+          </View>
+        ))}
+      </View>
+    </ScrollView>
   );
 };
 
-export default Search;
+export default Insight;

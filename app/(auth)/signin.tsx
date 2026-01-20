@@ -109,7 +109,7 @@ const SignIn: React.FC = () => {
           isLoggedIn: true,
           token: data.user.token,
         });
-        router.replace("/(tabs)/home");
+        router.replace("/(tabs)/orders");
 
       }
     } catch (err) {

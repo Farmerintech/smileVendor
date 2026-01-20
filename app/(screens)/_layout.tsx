@@ -7,9 +7,7 @@ import "../../global.css";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useEffect } from "react";
 import { TouchableOpacity } from "react-native";
-import { useAppStore } from "../store/useAppStore";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -18,12 +16,12 @@ export default function RootLayout() {
   });
 
   // if (!loaded) return null;
-    const {user} = useAppStore();
-    useEffect(()=>{
-      if(!user || user.email===''){
-        router.push("/(auth)/signin")
-      }
-    })
+    // const {user} = useAppStore();
+    // useEffect(()=>{
+    //   if(!user || user.email===''){
+    //     router.push("/(auth)/signin")
+    //   }
+    // })
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
@@ -55,6 +53,20 @@ export default function RootLayout() {
     ),
   }}
 /> 
+<Stack.Screen name="addProduct" 
+        options={{
+          headerShown: true,
+          headerShadowVisible: false,
+        headerTitle: 'Add new product',
+
+        }} />
+        <Stack.Screen name="storeInfo" 
+        options={{
+          headerShown: true,
+          headerShadowVisible: false,
+        headerTitle: 'Store Informations',
+
+        }} />
  <Stack.Screen name="changeNumber" 
         options={{
           headerShown: false,

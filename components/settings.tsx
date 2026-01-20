@@ -72,6 +72,9 @@ const {setUser, logout} = useAppStore()
   const goTo = () =>{
     router.push("/(screens)/account")
   }
+   const goToStore = () =>{
+    router.push("/(screens)/storeInfo")
+  }
 const Logout = () =>{
 logout();
 router.replace("/(auth)/signin")
@@ -86,8 +89,8 @@ router.replace("/(auth)/signin")
         overflow: "scroll",
       }}
     >
-      <Item icon="receipt-outline" label="Order History" />
-      <Item icon="person-outline" label="Account" onPress={()=>{goTo()}} />
+      <Item icon="receipt-outline" label="Store information" onPress={()=>{goToStore()}}/>
+      <Item icon="person-outline" label="Personal information" onPress={()=>{goTo()}} />
       <Item icon="notifications-outline" label="Notifications" />
       <Item icon="trash-outline" label="Delete my account" danger />
       <Item icon="log-out-outline" label="Logout" danger  onPress={()=>{Logout()}} />

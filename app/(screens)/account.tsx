@@ -4,10 +4,13 @@ import { router } from "expo-router";
 import { StatusBar, View } from "react-native";
 import { useAppStore } from "../store/useAppStore";
 const Account: React.FC = () => {
+    useStatusBar("white", "dark-content");  
+
  const {user} = useAppStore()
-  useStatusBar("#093131", "light-content");
- 
+  // useStatusBar("#093131", "light-content");
+
  return (
+  
     <View
       style={{
         marginBottom:24,

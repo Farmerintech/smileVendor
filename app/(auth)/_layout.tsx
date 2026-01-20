@@ -38,7 +38,7 @@ export default function RootLayout() {
    const {user} = useAppStore();
     useEffect(()=>{
       // if(user && user.email!==''){
-        router.replace("/(tabs)/home")
+        router.replace("/(tabs)/orders")
       // }
     })
   const router = useRouter();

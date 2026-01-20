@@ -1,12 +1,13 @@
+import { useStatusBar } from "@/hooks/statusBar";
 import { useMemo, useState } from "react";
 import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 /* =====================================================
@@ -50,8 +51,9 @@ const SECTIONS = [
 /* =====================================================
    MAIN COMPONENT
 ===================================================== */
-export default function CreateStoreWizard() {
+export default function storeInfo() {
   const [activeSection, setActiveSection] = useState<string | null>(null);
+ useStatusBar("white", "dark-content");  
 
   const [form, setForm] = useState({
     vendorId: "",

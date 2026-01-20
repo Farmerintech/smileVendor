@@ -26,7 +26,7 @@ export default function App() {
 
   const handleRider = () => {
     // TODO: Navigate to Rider onboarding or dashboard
-    router.replace("/(tabs)/home")
+    router.replace("/(tabs)/orders")
     console.log("Continue as Rider");
   }
 
