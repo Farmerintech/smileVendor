@@ -20,7 +20,7 @@ import { useAppStore } from "../store/useAppStore";
 /* ================================
    Cloudinary Config
 ================================ */
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dtsiyyvu1/upload";
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dtsiyyvu1/image/upload";
 const CLOUDINARY_UPLOAD_PRESET = "smilefolder";
 
 const AddProduct = () => {
@@ -108,7 +108,15 @@ const uploadImageToCloudinary = async (uri: string): Promise<string> => {
           isAvailable,
         }),
       });
-
+console.log({
+          storeId,
+          name,
+          description,
+          price,
+          category,
+          imageUrl,
+          isAvailable,
+        })
       const data = await response.json();
 
       if (!response.ok) {
