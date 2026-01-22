@@ -18,7 +18,7 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 
 import * as Notifications from "expo-notifications";
 import * as SplashScreen from "expo-splash-screen";
@@ -84,21 +84,21 @@ export default function RootLayout() {
   }, [fontsLoaded]);
 
   // Handle initial routing (BEST PRACTICE)
-  // useEffect(() => {
-  //   if (!fontsLoaded) return;
+  useEffect(() => {
+    if (!fontsLoaded) return;
 
-  //   if (!hasCompletedOnboarding) {
-  //     router.replace("/(onboarding)");
-  //     return;
-  //   }
+    if (!hasCompletedOnboarding) {
+      router.replace("/(onboarding)");
+      return;
+    }
 
-  //   if (!user || !user.email) {
-  //     router.replace("/(auth)/signin");
-  //     return;
-  //   }
+    if (!user || !user.email) {
+      router.replace("/(auth)/signin");
+      return;
+    }
 
-  //   router.replace("/(tabs)/home");
-  // }, [fontsLoaded, hasCompletedOnboarding, user]);
+    router.replace("/(tabs)/orders");
+  }, [fontsLoaded, hasCompletedOnboarding, user]);
 
 if (!fontsLoaded) {
   return (

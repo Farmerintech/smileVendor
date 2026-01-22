@@ -1,245 +1,115 @@
-/* ================= ROLES ================= */
+// import * as Location from "expo-location";
+// import { create } from "zustand";
+// import { getSecureItem, removeSecureItem, setSecureItem } from "../lib/secureStorage";
 
-export type AppUserRole = "vendor" | "rider";
+// /* ================= TYPES ================= */
 
-/* ================= LOCATION ================= */
+// type LocationType = { latitude: number; longitude: number; };
 
-type LocationType = {
-  latitude: number;
-  longitude: number;
-};
+// type VendorProfile = {
+//   fullName: string;
+//   email: string;
+//   phone: string;
+//   image?: string;
+// };
 
-/* ================= APP USER ================= */
+// type Product = { id: string; name: string; price: number; image?: string };
+// type VendorOrderStatus = "ongoing" | "completed" | "cancelled";
+// type VendorOrder = { id: string; status: VendorOrderStatus; riderId?: string };
 
-type AppUser = {
-  id: string;
-  role: AppUserRole | null;
-  isLoggedIn: boolean;
-  token?: string;
-};
+// type StoreType = any; // replace with your proper store type
 
-/* ================= RIDER ================= */
+// type VendorState = {
+//   profile: VendorProfile | null;
+//   store: StoreType | null;
+//   products: Product[];
+//   orders: VendorOrder[];
+// };
 
-type RiderProfile = {
-  fullName: string;
-  email: string;
-  phone: string;
-  image?: string;
-};
+// /* ================= APP STATE ================= */
+// type AppState = {
+//   vendor: VendorState;
+//   location: LocationType | null;
+//   loading: boolean;
+//   hasCompletedOnboarding: boolean;
 
-type RiderOrderStatus =
-  | "picked"
-  | "delivering"
-  | "completed"
-  | "cancelled";
+//   hydrate: () => Promise<void>;
 
-type RiderOrder = {
-  id: string;
-  status: RiderOrderStatus;
-  pickupLocation: string;
-  dropoffLocation: string;
-};
+//   setVendorProfile: (profile: VendorProfile) => Promise<void>;
+//   setVendorStore: (store: StoreType) => Promise<void>;
+//   setVendorProducts: (products: Product[]) => Promise<void>;
+//   setVendorOrders: (orders: VendorOrder[]) => Promise<void>;
 
-type RiderState = {
-  profile: RiderProfile | null;
-  currentOrder: RiderOrder | null;
-};
+//   refreshLocation: () => Promise<void>;
+//   completeOnboarding: () => Promise<void>;
+//   logout: () => Promise<void>;
+// };
 
-/* ================= VENDOR ================= */
+// /* ================= DEFAULTS ================= */
+// const defaultVendorState: VendorState = { profile: null, store: null, products: [], orders: [] };
 
-type VendorProfile = {
-  fullName: string;
-  email: string;
-  phone: string;
-  image?: string;
-};
+// /* ================= STORE ================= */
+// export const useAppStore = create<AppState>((set, get) => ({
+//   vendor: defaultVendorState,
+//   location: null,
+//   loading: true,
+//   hasCompletedOnboarding: false,
 
-type Product = {
-  id: string;
-  name: string;
-  price: number;
-  image?: string;
-};
+//   /* 🔄 HYDRATE */
+//   hydrate: async () => {
+//     const vendor = await getSecureItem<VendorState>("vendor");
+//     const hasCompletedOnboarding = await getSecureItem<boolean>("hasCompletedOnboarding");
 
-type VendorOrderStatus = "ongoing" | "completed" | "cancelled";
+//     set({
+//       vendor: vendor ?? defaultVendorState,
+//       hasCompletedOnboarding: hasCompletedOnboarding ?? false,
+//       loading: false,
+//     });
+//   },
 
-type VendorOrder = {
-  id: string;
-  status: VendorOrderStatus;
-  riderId?: string;
-};
+//   /* 🏪 VENDOR */
+//   setVendorProfile: async (profile) => {
+//     set((state) => ({ vendor: { ...state.vendor, profile } }));
+//     await setSecureItem("vendor", get().vendor);
+//   },
 
-type VendorState = {
-  profile: VendorProfile | null;
-  products: Product[];
-  orders: VendorOrder[];
-};
+//   setVendorStore: async (store) => {
+//     set((state) => ({ vendor: { ...state.vendor, store } }));
+//     await setSecureItem("vendor", get().vendor);
+//   },
 
-type AppState = {
-  appUser: AppUser;
-  rider: RiderState;
-  vendor: VendorState;
+//   setVendorProducts: async (products) => {
+//     set((state) => ({ vendor: { ...state.vendor, products } }));
+//     await setSecureItem("vendor", get().vendor);
+//   },
 
-  location: LocationType | null;
-  loading: boolean;
-  hasCompletedOnboarding: boolean;
+//   setVendorOrders: async (orders) => {
+//     set((state) => ({ vendor: { ...state.vendor, orders } }));
+//     await setSecureItem("vendor", get().vendor);
+//   },
 
-  hydrate: () => Promise<void>;
+//   /* 📍 LOCATION */
+//   refreshLocation: async () => {
+//     const { status } = await Location.requestForegroundPermissionsAsync();
+//     if (status !== "granted") return;
 
-  setAppUser: (user: AppUser) => Promise<void>;
-  setRiderProfile: (profile: RiderProfile) => Promise<void>;
-  setVendorProfile: (profile: VendorProfile) => Promise<void>;
+//     const pos = await Location.getCurrentPositionAsync({});
+//     const location = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+//     set({ location });
+//     await setSecureItem("location", location);
+//   },
 
-  setRiderOrder: (order: RiderOrder | null) => Promise<void>;
-  setVendorOrders: (orders: VendorOrder[]) => Promise<void>;
+//   /* 🚀 ONBOARDING */
+//   completeOnboarding: async () => {
+//     set({ hasCompletedOnboarding: true });
+//     await setSecureItem("hasCompletedOnboarding", true);
+//   },
 
-  setVendorProducts: (products: Product[]) => Promise<void>;
-
-  refreshLocation: () => Promise<void>;
-  completeOnboarding: () => Promise<void>;
-  logout: () => Promise<void>;
-};
-
-const defaultAppUser: AppUser = {
-  id: "",
-  role: null,
-  isLoggedIn: false,
-};
-
-const defaultRiderState: RiderState = {
-  profile: null,
-  currentOrder: null,
-};
-
-const defaultVendorState: VendorState = {
-  profile: null,
-  products: [],
-  orders: [],
-};
-
-import * as Location from "expo-location";
-import { create } from "zustand";
-import {
-    getSecureItem,
-    removeSecureItem,
-    setSecureItem,
-} from "../lib/secureStorage";
-
-export const useAppStore = create<AppState>((set, get) => ({
-  appUser: defaultAppUser,
-  rider: defaultRiderState,
-  vendor: defaultVendorState,
-
-  location: null,
-  loading: true,
-  hasCompletedOnboarding: false,
-
-  /* 🔄 HYDRATE */
-  hydrate: async () => {
-    const appUser = await getSecureItem<AppUser>("appUser");
-    const rider = await getSecureItem<RiderState>("rider");
-    const vendor = await getSecureItem<VendorState>("vendor");
-    const hasCompletedOnboarding =
-      await getSecureItem<boolean>("hasCompletedOnboarding");
-
-    set({
-      appUser: appUser ?? defaultAppUser,
-      rider: rider ?? defaultRiderState,
-      vendor: vendor ?? defaultVendorState,
-      hasCompletedOnboarding: hasCompletedOnboarding ?? false,
-      loading: false,
-    });
-  },
-
-  /* 👤 APP USER */
-  setAppUser: async (user) => {
-    set({ appUser: user });
-    await setSecureItem("appUser", user);
-  },
-
-  /* 🚴 RIDER */
-  setRiderProfile: async (profile) => {
-    set((state) => ({
-      rider: { ...state.rider, profile },
-    }));
-    await setSecureItem("rider", {
-      profile,
-      currentOrder: null,
-    });
-  },
-
-  setRiderOrder: async (order) => {
-    set((state) => ({
-      rider: { ...state.rider, currentOrder: order },
-    }));
-    await setSecureItem("rider", {
-      ...defaultRiderState,
-      currentOrder: order,
-    });
-  },
-
-  /* 🏪 VENDOR */
-setVendorProfile: async (profile) => {
-  set((state) => ({
-    vendor: { ...state.vendor, profile },
-  }));
-
-  const { vendor } = get(); // ✅ get latest state
-  await setSecureItem("vendor", vendor);
-},
-
-setVendorProducts: async (products) => {
-  set((state) => ({
-    vendor: { ...state.vendor, products },
-  }));
-
-  const { vendor } = get();
-  await setSecureItem("vendor", vendor);
-},
-
-setVendorOrders: async (orders) => {
-  set((state) => ({
-    vendor: { ...state.vendor, orders },
-  }));
-
-  const { vendor } = get();
-  await setSecureItem("vendor", vendor);
-},
-
-  /* 📍 LOCATION */
-  refreshLocation: async () => {
-    const { status } =
-      await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") return;
-
-    const pos = await Location.getCurrentPositionAsync({});
-    const location = {
-      latitude: pos.coords.latitude,
-      longitude: pos.coords.longitude,
-    };
-
-    set({ location });
-    await setSecureItem("location", location);
-  },
-
-  /* 🚀 ONBOARDING */
-  completeOnboarding: async () => {
-    set({ hasCompletedOnboarding: true });
-    await setSecureItem("hasCompletedOnboarding", true);
-  },
-
-  /* 🚪 LOGOUT */
-  logout: async () => {
-    set({
-      appUser: defaultAppUser,
-      rider: defaultRiderState,
-      vendor: defaultVendorState,
-      location: null,
-    });
-
-    await removeSecureItem("appUser");
-    await removeSecureItem("rider");
-    await removeSecureItem("vendor");
-    await removeSecureItem("location");
-  },
-}));
+//   /* 🚪 LOGOUT */
+//   logout: async () => {
+//     set({ vendor: defaultVendorState, location: null, hasCompletedOnboarding: false });
+//     await removeSecureItem("vendor");
+//     await removeSecureItem("location");
+//     await removeSecureItem("hasCompletedOnboarding");
+//   },
+// }));

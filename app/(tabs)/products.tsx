@@ -37,21 +37,7 @@ const Products = () => {
   return (
     <View style={{ flex: 1, backgroundColor: "#F9FAFB", paddingTop: 40 }}>
       {/* ================= ADD NEW PRODUCT BUTTON ================= */}
-      <View style={{ paddingHorizontal: 16, marginBottom: 20 }}>
-        <TouchableOpacity
-          onPress={() => router.push("/(screens)/addProduct")}
-          style={{
-            backgroundColor: "#FF6B35",
-            padding: 14,
-            borderRadius: 16,
-            alignItems: "center",
-          }}
-        >
-          <AppText style={{ color: "#FFFFFF", fontWeight: "600", fontSize: 16 }}>
-            + Add New Product
-          </AppText>
-        </TouchableOpacity>
-      </View>
+   
 
       {/* ================= PRODUCT LIST ================= */}
       <FlatList
@@ -89,6 +75,21 @@ const Products = () => {
           </View>
         )}
       />
+         <View style={{ paddingHorizontal: 16, marginBottom: 20 }}>
+        <TouchableOpacity
+          onPress={() => router.push("/(screens)/addProduct")}
+          style={{
+            backgroundColor: "#FF6B35",
+            padding: 14,
+            borderRadius: 16,
+            alignItems: "center",
+          }}
+        >
+          <AppText style={{ color: "#FFFFFF", fontWeight: "600", fontSize: 16 }}>
+            + Add New Product
+          </AppText>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };

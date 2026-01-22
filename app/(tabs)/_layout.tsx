@@ -12,14 +12,13 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import '../../global.css';
 import { AppText } from '../_layout';
-import { useAppStore } from '../store/useAppStore';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const yakub = require('@/assets/images/yakub.jpg');
-  const { cart } = useAppStore();
+  // const { order } = useAppStore();
 
   const moveToCart = () => router.push('/orders');
 
@@ -105,9 +104,9 @@ export default function TabLayout() {
                   <TouchableOpacity onPress={moveToCart} style={styles.iconButton}>
                     <View style={{ position: 'relative' }}>
                       <Ionicons name="cart-outline" size={20} color="#1A1A1A" />
-                      {cart.length > 0 && (
+                      {/* {cart.length > 0 && (
                         <Text style={styles.cartBadge}>{cart.length}</Text>
-                      )}
+                      )} */}
                     </View>
                   </TouchableOpacity>
                 </View>

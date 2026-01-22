@@ -9,6 +9,7 @@ export type StoreInfo = {
   coverImage?: string;
   officialEmail: string;
   officialPhone: string;
+  addresses:string[];
   vendorType: "restaurant" | "supermarket" | "pharmacy" | "supplier" | "groceries";
   deliveryType: "instant" | "preorder" | "instant & preorder";
 };

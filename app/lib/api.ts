@@ -2,6 +2,7 @@ import { useAppStore } from '../store/useAppStore';
 
 export const BaseURL = `https://smile-backend-9ao3.onrender.com/api/v1`
 // `http://localhost:8000/api/v1`
+//`https://smile-backend-9ao3.onrender.com/api/v1`
 export async function apiRequest<T>({
   url,
   method = 'GET',

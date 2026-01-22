@@ -20,7 +20,8 @@ import { BaseURL } from "../lib/api";
 /* ===================== TYPES ===================== */
 interface FormData {
   phoneNumber: string;
-  username: string;
+  firstName: string;
+  lastName:string
   email: string;
   password: string;
 }
@@ -35,11 +36,13 @@ const signUpSchema = Joi.object<FormData>({
       "string.empty": "Phone number is required",
       "string.pattern.base": "Phone number must contain only digits",
     }),
-
-  username: Joi.string().min(2).required().messages({
-    "string.empty": "Username is required",
+///api/v1/vendor
+  firstName: Joi.string().min(2).required().messages({
+    "string.empty": "First name is required",
   }),
-
+ lastName: Joi.string().min(2).required().messages({
+    "string.empty": "Last name is required",
+  }),
   email: Joi.string()
     .email({ tlds: { allow: false } })
     .required()
@@ -58,7 +61,8 @@ const signUpSchema = Joi.object<FormData>({
 const SignUp: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     phoneNumber: "",
-    username: "",
+    firstName: "",
+    lastName:"",
     email: "",
     password: "",
   });
@@ -72,7 +76,7 @@ const SignUp: React.FC = () => {
   const [showNotification, setShowNotification] = useState(false);
 
   const handleFormChange = (key: keyof FormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [key]: value.trim() }));
+    setFormData((prev) => ({ ...prev, [key]: value }));
     if (error[key]) setError((prev) => ({ ...prev, [key]: "" }));
   };
 
@@ -103,7 +107,7 @@ const SignUp: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await fetch(`${BaseURL}/auth/registeration`, {
+      const response = await fetch(`${BaseURL}/auth/vendor/registeration`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -190,14 +194,21 @@ const SignUp: React.FC = () => {
             />
 
             <InputFields
-              placeHolder="Username"
-              value={formData.username}
-              action={(v: string) => handleFormChange("username", v)}
+              placeHolder="First name"
+              value={formData.firstName}
+              action={(v: string) => handleFormChange("firstName", v)}
               icon="person"
-              error={error.username}
+              error={error.firstName}
               name="username"
             />
-
+              <InputFields
+              placeHolder="Last name"
+              value={formData.lastName}
+              action={(v: string) => handleFormChange("lastName", v)}
+              icon="person"
+              error={error.lastName}
+              name="username"
+            />
             <InputFields
               placeHolder="Password"
               value={formData.password}

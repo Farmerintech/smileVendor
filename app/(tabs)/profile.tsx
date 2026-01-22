@@ -104,7 +104,7 @@ const SignIn: React.FC = () => {
         </View>
         <View className="flex items-start flex-wrap flex-1">
           <AppTextBold className="text-[28px] text-white text-center mb-2">
-           {user.username}
+           {/* {user.username} */}
         </AppTextBold>
         <Text className="text-white text-[12px]">{user.email}</Text>
         </View>

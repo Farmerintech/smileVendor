@@ -73,7 +73,7 @@ const {setUser, logout} = useAppStore()
     router.push("/(screens)/account")
   }
    const goToStore = () =>{
-    router.push("/(screens)/storeInfo")
+    router.push("/(screens)/updateStoreInfo")
   }
 const Logout = () =>{
 logout();

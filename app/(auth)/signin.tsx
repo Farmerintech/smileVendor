@@ -91,7 +91,7 @@ const SignIn: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await fetch(`${BaseURL}/auth/login`, {
+      const response = await fetch(`${BaseURL}/auth/vendor/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -104,7 +104,7 @@ const SignIn: React.FC = () => {
 
       if (response.ok) {
         setUser({
-          username: data.user.username,
+          id:"",
           email: data.user.email,
           isLoggedIn: true,
           token: data.user.token,

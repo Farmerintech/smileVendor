@@ -1,49 +1,140 @@
-// screens/AddProduct.tsx
 import { useStatusBar } from "@/hooks/statusBar";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
-import { Alert, Image, ScrollView, TextInput, TouchableOpacity } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
 import "../../global.css";
 import { AppText } from "../_layout";
+import { BaseURL } from "../lib/api";
+import { useAppStore } from "../store/useAppStore";
+
+/* ================================
+   Cloudinary Config
+================================ */
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dtsiyyvu1/upload";
+const CLOUDINARY_UPLOAD_PRESET = "smilefolder";
+
 const AddProduct = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("");
   const [isAvailable, setIsAvailable] = useState(true);
-  const [image, setImage] = useState<any>(null);
+  const [image, setImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const { vendor, user } = useAppStore();
+  const storeId = vendor.store.id; // ✅ correct ID
+
+  useStatusBar("white", "dark-content");
+
+  /* ================================
+     Upload to Cloudinary
+  ================================ */
+const uploadImageToCloudinary = async (uri: string): Promise<string> => {
+  const formData = new FormData();
+
+  if (uri.startsWith("blob:") || uri.startsWith("http")) {
+    // ✅ WEB
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    formData.append("file", blob);
+  } else {
+    // ✅ MOBILE
+    formData.append("file", {
+      uri,
+      name: "product.jpg",
+      type: "image/jpeg",
+    } as any);
+  }
+
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+  const res = await fetch(CLOUDINARY_URL, {
+    method: "POST",
+    body: formData,
+  });
+
+  const json = await res.json();
+
+  if (!res.ok) {
+    console.error("Cloudinary error:", json);
+    throw new Error(json?.error?.message || "Cloudinary upload failed");
+  }
+
+  return json.secure_url;
+};
+
+  /* ================================
+     Submit Product
+  ================================ */
+  const handleSubmit = async () => {
     if (!name || !price) {
-      Alert.alert("Error", "Please fill in at least Name and Price");
+      Alert.alert("Error", "Name and price are required");
       return;
     }
 
-    const newProduct = {
-      id: Math.random().toString(),
-      name,
-      description,
-      price: parseFloat(price),
-      category,
-      isAvailable,
-      image: image || require("@/assets/images/yakub.jpg"), // placeholder
-    };
+    setLoading(true);
 
-    // TODO: Save newProduct to database
-    console.log("New Product:", newProduct);
-    Alert.alert("Success", "Product added successfully!");
+    try {
+      let imageUrl = "";
 
-    // Reset form
-    setName("");
-    setDescription("");
-    setPrice("");
-    setCategory("");
-    setIsAvailable(true);
-    setImage(null);
+      if (image) {
+        imageUrl = await uploadImageToCloudinary(image);
+      }
+
+      const response = await fetch(`${BaseURL}/products/create_product`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${user?.token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          storeId,
+          name,
+          description,
+          price,
+          category,
+          imageUrl,
+          isAvailable,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || "Failed to add product");
+      }
+
+      Alert.alert("Success", "Product added successfully");
+
+      // Reset form
+      setName("");
+      setDescription("");
+      setPrice("");
+      setCategory("");
+      setIsAvailable(true);
+      setImage(null);
+    } catch (err: any) {
+      console.error("ADD PRODUCT ERROR:", err);
+      Alert.alert("Error", err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
- useStatusBar("white", "dark-content");  
 
+  /* ================================
+     UI
+  ================================ */
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: "#F9FAFB", paddingTop: 40 }}
@@ -57,12 +148,7 @@ const AddProduct = () => {
         placeholder="Product Name"
         value={name}
         onChangeText={setName}
-        style={{
-          backgroundColor: "#FFFFFF",
-          padding: 12,
-          borderRadius: 12,
-          marginBottom: 12,
-        }}
+        style={inputStyle}
       />
 
       <TextInput
@@ -70,14 +156,7 @@ const AddProduct = () => {
         value={description}
         onChangeText={setDescription}
         multiline
-        style={{
-          backgroundColor: "#FFFFFF",
-          padding: 12,
-          borderRadius: 12,
-          marginBottom: 12,
-          minHeight: 80,
-          textAlignVertical: "top",
-        }}
+        style={[inputStyle, { minHeight: 80, textAlignVertical: "top" }]}
       />
 
       <TextInput
@@ -85,75 +164,51 @@ const AddProduct = () => {
         value={price}
         keyboardType="numeric"
         onChangeText={setPrice}
-        style={{
-          backgroundColor: "#FFFFFF",
-          padding: 12,
-          borderRadius: 12,
-          marginBottom: 12,
-        }}
+        style={inputStyle}
       />
 
       <TextInput
         placeholder="Category"
         value={category}
         onChangeText={setCategory}
-        style={{
-          backgroundColor: "#FFFFFF",
-          padding: 12,
-          borderRadius: 12,
-          marginBottom: 12,
-        }}
+        style={inputStyle}
       />
 
-      {/* Image Upload Placeholder */}
-  <TouchableOpacity
-  onPress={async () => {
-    // Ask for permission
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      alert("Permission to access media library is required!");
-      return;
-    }
+      {/* Image Picker */}
+      <TouchableOpacity
+        onPress={async () => {
+          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (status !== "granted") {
+            Alert.alert("Permission required");
+            return;
+          }
 
-    // Open image picker
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.7,
-    });
+          const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 0.7,
+          });
 
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
-  }}
-  style={{
-    backgroundColor: "#FFFFFF",
-    padding: 12,
-    borderRadius: 12,
-    alignItems: "center",
-    marginBottom: 12,
-  }}
->
-  {image ? (
-    <Image
-      source={{ uri: image }}
-      style={{ width: 100, height: 100, borderRadius: 12 }}
-    />
-  ) : (
-    <AppText>Upload Image</AppText>
-  )}
-</TouchableOpacity>
+          if (!result.canceled) {
+            setImage(result.assets[0].uri);
+          }
+        }}
+        style={imageBox}
+      >
+        {image ? (
+          <Image source={{ uri: image }} style={{ width: 100, height: 100, borderRadius: 12 }} />
+        ) : (
+          <View style={{ alignItems: "center" }}>
+            <Ionicons name="camera-outline" size={80} />
+            <AppText>Upload Image</AppText>
+          </View>
+        )}
+      </TouchableOpacity>
 
-
-      {/* Availability Toggle */}
+      {/* Availability */}
       <TouchableOpacity
         onPress={() => setIsAvailable(!isAvailable)}
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          marginBottom: 20,
-        }}
+        style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}
       >
         <Ionicons
           name={isAvailable ? "checkbox" : "square-outline"}
@@ -164,22 +219,42 @@ const AddProduct = () => {
         <AppText>Available</AppText>
       </TouchableOpacity>
 
-      {/* Submit Button */}
+      {/* Submit */}
       <TouchableOpacity
         onPress={handleSubmit}
+        disabled={loading}
         style={{
-          backgroundColor: "#FF6B35",
+          backgroundColor: loading ? "#FFA07A" : "#FF6B35",
           padding: 16,
           borderRadius: 16,
           alignItems: "center",
         }}
       >
-        <AppText style={{ color: "#FFFFFF", fontWeight: "600", fontSize: 16 }}>
-          Add Product
-        </AppText>
+        {loading ? (
+          <ActivityIndicator color="#FFF" />
+        ) : (
+          <AppText style={{ color: "#FFF", fontWeight: "600", fontSize: 16 }}>
+            Add Product
+          </AppText>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );
+};
+
+const inputStyle = {
+  backgroundColor: "#FFF",
+  padding: 12,
+  borderRadius: 12,
+  marginBottom: 12,
+};
+
+const imageBox = {
+  backgroundColor: "#FFF",
+  padding: 12,
+  borderRadius: 12,
+  alignItems: "center" as const,
+  marginBottom: 12,
 };
 
 export default AddProduct;

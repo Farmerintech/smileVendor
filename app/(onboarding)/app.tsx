@@ -22,11 +22,12 @@ export default function App() {
   const handleVendor = () => {
     // TODO: Navigate to Vendor onboarding or dashboard
     console.log("Continue as Vendor");
+    router.replace("/(auth)/signin")
   }
 
   const handleRider = () => {
     // TODO: Navigate to Rider onboarding or dashboard
-    router.replace("/(tabs)/orders")
+router.replace("/(auth)/signin")
     console.log("Continue as Rider");
   }
 
@@ -59,7 +60,7 @@ export default function App() {
             </Text>
 
             {/* Buttons */}
-            <View className="w-full space-y-4">
+            <View className="w-full space-y-4 gap-3">
 
               <TouchableOpacity
                 onPress={handleVendor}

@@ -1488,8 +1488,8 @@ export function countryCodeToEmoji(code: string) {
 
 // CountrySelectWithInput.tsx
 import { InputFields } from "@/components/form/formInput";
-import { Entypo, Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useState } from "react";
 import {
   FlatList,
   Modal,
@@ -1500,7 +1500,7 @@ import {
   View,
 } from "react-native";
 
-const CountrySelectWithInput = ({ value, onChange, error, label = "Phone Number", icon = "phone" }: any) => {
+const CountrySelectWithInput = ({ value, onChange, error, label = "Phone Number", }: any) => {
   const [selectedCountry, setSelectedCountry] = useState(countries[0]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -1532,7 +1532,7 @@ const CountrySelectWithInput = ({ value, onChange, error, label = "Phone Number"
       {/* Country Code + Phone Input */}
       <View className="flex-row items-center  justify-between space-x-2 w-full">
         {/* Country Picker - 40% width */}
-        <View className="w-[35%]">
+        {/* <View className="w-[35%]">
           <TouchableOpacity
             className="px-4 py-3 rounded-full  border border-gray-200 flex-row items-center justify-between"
             onPress={() => setModalVisible(true)}
@@ -1542,10 +1542,10 @@ const CountrySelectWithInput = ({ value, onChange, error, label = "Phone Number"
             </Text>
             <Entypo name="chevron-down" size={16} color="gray" />
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         {/* Phone Number Input Field - 60% width */}
-        <View className="w-[60%]">
+        <View className="w-full relative ">
           <InputFields
             label=""
             placeHolder="Phone number"
@@ -1553,7 +1553,7 @@ const CountrySelectWithInput = ({ value, onChange, error, label = "Phone Number"
             action={handlePhoneChange}
             name="Phone Number"
             error={error || ""}
-            icon={icon}
+            icon={"call"}
           />
         </View>
       </View>

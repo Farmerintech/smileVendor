@@ -1,139 +1,161 @@
 import * as Location from "expo-location";
 import { create } from "zustand";
-import {
-  getSecureItem,
-  removeSecureItem,
-  setSecureItem,
-} from "../lib/secureStorage";
+import { getSecureItem, removeSecureItem, setSecureItem } from "../lib/secureStorage";
 
 /* ================= TYPES ================= */
 
-type Product = {
+export type LocationType = {
+  latitude: number;
+  longitude: number;
+};
+
+/* ---------- USER (VENDOR AUTH) ---------- */
+export type User = {
+  id: string;
+  email: string;
+  token?: string;
+  isLoggedIn: boolean;
+};
+
+/* ---------- VENDOR ---------- */
+export type VendorProfile = {
+  fullName: string;
+  email: string;
+  phone: string;
+  image?: string;
+};
+
+export type StoreType = any; // replace with your real store type
+
+export type Product = {
   id: string;
   name: string;
   price: number;
   image?: string;
 };
 
-export type CartItem = Product & {
-  quantity: number;
+export type VendorOrderStatus =
+  | "ongoing"
+  | "completed"
+  | "cancelled";
+
+export type VendorOrder = {
+  id: string;
+  status: VendorOrderStatus;
+  riderId?: string;
 };
 
-type LocationType = {
-  latitude: number;
-  longitude: number;
+export type VendorState = {
+  profile: VendorProfile | null;
+  store: StoreType | null;
+  products: Product[];
+  orders: VendorOrder[];
 };
 
-type User = {
-  username: string;
-  email: string;
-  isLoggedIn: boolean;
-  token?: string;
-  addresses?: string[];
-};
+/* ================= APP STATE ================= */
 
-type AppState = {
+export type AppState = {
   user: User;
-  cart: CartItem[];
-  wishlist: Product[];
+  vendor: VendorState;
+
   location: LocationType | null;
   loading: boolean;
-
   hasCompletedOnboarding: boolean;
 
   hydrate: () => Promise<void>;
+
   setUser: (user: User) => Promise<void>;
-  completeOnboarding: () => Promise<void>;
-  addToCart: (item: CartItem) => Promise<void>;
-  removeFromCart: (id: string) => Promise<void>;
-  setWishlist: (wishlist: Product[]) => Promise<void>;
+
+  setVendorProfile: (profile: VendorProfile) => Promise<void>;
+  setVendorStore: (store: StoreType | null) => Promise<void>;
+  setVendorProducts: (products: Product[]) => Promise<void>;
+  setVendorOrders: (orders: VendorOrder[]) => Promise<void>;
+
   refreshLocation: () => Promise<void>;
+  completeOnboarding: () => Promise<void>;
   logout: () => Promise<void>;
 };
 
 /* ================= DEFAULTS ================= */
 
 const defaultUser: User = {
-  username: "",
+  id: "",
   email: "",
+  token: undefined,
   isLoggedIn: false,
-  addresses: [],
+};
+
+const defaultVendorState: VendorState = {
+  profile: null,
+  store: null,
+  products: [],
+  orders: [],
 };
 
 /* ================= STORE ================= */
 
 export const useAppStore = create<AppState>((set, get) => ({
   user: defaultUser,
-  cart: [],
-  wishlist: [],
+  vendor: defaultVendorState,
+
   location: null,
   loading: true,
-
   hasCompletedOnboarding: false,
 
-  /* 🔄 HYDRATE STORE */
+  /* 🔄 HYDRATE */
   hydrate: async () => {
-    const cart = await getSecureItem<CartItem[]>("cart");
     const user = await getSecureItem<User>("user");
+    const vendor = await getSecureItem<VendorState>("vendor");
     const hasCompletedOnboarding =
       await getSecureItem<boolean>("hasCompletedOnboarding");
 
     set({
-      cart: cart ?? [],
       user: user ?? defaultUser,
+      vendor: vendor ?? defaultVendorState,
       hasCompletedOnboarding: hasCompletedOnboarding ?? false,
       loading: false,
     });
   },
 
-  /* 👤 USER */
+  /* 👤 USER (AUTH) */
   setUser: async (user) => {
     set({ user });
     await setSecureItem("user", user);
   },
 
-  /* 🚀 ONBOARDING */
-  completeOnboarding: async () => {
-    set({ hasCompletedOnboarding: true });
-    await setSecureItem("hasCompletedOnboarding", true);
+  /* 🏪 VENDOR */
+  setVendorProfile: async (profile) => {
+    set((state) => ({
+      vendor: { ...state.vendor, profile },
+    }));
+    await setSecureItem("vendor", get().vendor);
   },
 
-  /* 🛒 CART */
-  addToCart: async (item) => {
-    const cart = get().cart;
-    const existing = cart.find((i) => i.id === item.id);
-
-    let updatedCart: CartItem[];
-
-    if (existing) {
-      updatedCart = cart.map((i) =>
-        i.id === item.id
-          ? { ...i, quantity: i.quantity + item.quantity }
-          : i
-      );
-    } else {
-      updatedCart = [...cart, item];
-    }
-
-    set({ cart: updatedCart });
-    await setSecureItem("cart", updatedCart);
+  setVendorStore: async (store) => {
+    set((state) => ({
+      vendor: { ...state.vendor, store },
+    }));
+    await setSecureItem("vendor", get().vendor);
   },
 
-  removeFromCart: async (id) => {
-    const updatedCart = get().cart.filter((item) => item.id !== id);
-    set({ cart: updatedCart });
-    await setSecureItem("cart", updatedCart);
+  setVendorProducts: async (products) => {
+    set((state) => ({
+      vendor: { ...state.vendor, products },
+    }));
+    await setSecureItem("vendor", get().vendor);
   },
 
-  /* ❤️ WISHLIST */
-  setWishlist: async (wishlist) => {
-    set({ wishlist });
-    await setSecureItem("wishlist", wishlist);
+  setVendorOrders: async (orders) => {
+    set((state) => ({
+      vendor: { ...state.vendor, orders },
+    }));
+    await setSecureItem("vendor", get().vendor);
   },
 
   /* 📍 LOCATION */
   refreshLocation: async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
+    const { status } =
+      await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") return;
 
     const pos = await Location.getCurrentPositionAsync({});
@@ -146,19 +168,24 @@ export const useAppStore = create<AppState>((set, get) => ({
     await setSecureItem("location", location);
   },
 
+  /* 🚀 ONBOARDING */
+  completeOnboarding: async () => {
+    set({ hasCompletedOnboarding: true });
+    await setSecureItem("hasCompletedOnboarding", true);
+  },
+
   /* 🚪 LOGOUT */
   logout: async () => {
     set({
       user: defaultUser,
-      cart: [],
-      wishlist: [],
+      vendor: defaultVendorState,
       location: null,
+      hasCompletedOnboarding: false,
     });
 
     await removeSecureItem("user");
-    await removeSecureItem("cart");
-    await removeSecureItem("wishlist");
+    await removeSecureItem("vendor");
     await removeSecureItem("location");
+    await removeSecureItem("hasCompletedOnboarding");
   },
 }));
-
