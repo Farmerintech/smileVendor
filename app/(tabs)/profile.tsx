@@ -23,7 +23,8 @@ const SignIn: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({ phoneNumber: "" });
   const [error, setError] = useState<Partial<FormData>>({});
   const [loading, setLoading] = useState(false);
-
+const {vendor} = useAppStore()
+  const store = vendor.store;
   const handleFormChange = (key: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
     if (error[key]) setError((prev) => ({ ...prev, [key]: "" }));
@@ -104,9 +105,9 @@ const SignIn: React.FC = () => {
         </View>
         <View className="flex items-start flex-wrap flex-1">
           <AppTextBold className="text-[28px] text-white text-center mb-2">
-           {/* {user.username} */}
+           {store.name}
         </AppTextBold>
-        <Text className="text-white text-[12px]">{user.email}</Text>
+        <Text className="text-white text-[10px]">ID: {store.id}</Text>
         </View>
        </View>
         <TouchableOpacity onPress={()=>router.push("/(screens)/account")}>

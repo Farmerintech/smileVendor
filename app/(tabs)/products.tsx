@@ -3,6 +3,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
+  Alert,
   FlatList,
   Image,
   Switch,
@@ -13,6 +14,7 @@ import {
 import "../../global.css";
 import { AppText } from "../_layout";
 import { BaseURL } from "../lib/api";
+import { useAppStore } from "../store/useAppStore";
 
 type Product = {
   id: string;
@@ -30,14 +32,19 @@ const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
+  const {vendor} = useAppStore()
+  const storeId = vendor.store.id
   useStatusBar("white", "dark-content");
+
+
 
   /* ================= FETCH PRODUCTS ================= */
   const fetchProducts = async () => {
+    // Alert.alert(storeId)
+    console.log(storeId)
     try {
       setLoading(true);
-      const res = await fetch(`${BaseURL}/products/get_products`); // 👈 change
+      const res = await fetch(`${BaseURL}/products/get_store_products/${storeId}`); // 👈 change
       const json = await res.json();
       setProducts(json.data);
     } catch (err) {
@@ -63,24 +70,37 @@ const Products = () => {
       )
     );
   };
-
+const [savingId, setSavingId] = useState<string | null>(null);
   /* ================= SAVE PRODUCT ================= */
-  const saveProduct = async (product: Product) => {
-    try {
-      await fetch(`/products/edit_product/${product.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(product),
-      });
-      setExpandedId(null);
-    } catch (err) {
-      console.log("Update error:", err);
+const saveProduct = async (product: Product) => {
+  setSavingId(product.id);
+
+  try {
+    const res = await fetch(`${BaseURL}/products/edit_product/${product.storeId}/${product.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(product),
+    });
+    if(res.ok){
+          Alert.alert("Product updated successfully!");
+
+    }else{
+          Alert.alert("Unable to save product!");
+
     }
-  };
+    setExpandedId(null);
+  } catch (err) {
+    console.log("Update error:", err);
+    Alert.alert("Failed to update product");
+  } finally {
+    setSavingId(null);
+  }
+};
 
   /* ================= RENDER ITEM ================= */
   const renderItem = ({ item }: { item: Product }) => {
     const isExpanded = expandedId === item.id;
+const isSaving = savingId === item.id;
 
     return (
       <View
@@ -189,13 +209,18 @@ const Products = () => {
               >
                 <AppText style={{ color: "#374151" }}>Cancel</AppText>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => saveProduct(item)}
-                style={styles.saveBtn}
-              >
-                <AppText style={{ color: "#FFFFFF" }}>Save</AppText>
-              </TouchableOpacity>
+<TouchableOpacity
+  onPress={() => saveProduct(item)}
+  disabled={isSaving}
+  style={[
+    styles.saveBtn,
+    isSaving && { opacity: 0.6 },
+  ]}
+>
+  <AppText style={{ color: "#FFFFFF" }}>
+    {isSaving ? "Saving..." : "Save"}
+  </AppText>
+</TouchableOpacity>
             </View>
           </View>
         )}

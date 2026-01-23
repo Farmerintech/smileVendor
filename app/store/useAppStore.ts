@@ -12,6 +12,7 @@ export type LocationType = {
 /* ---------- USER (VENDOR AUTH) ---------- */
 export type User = {
   id: string;
+  // username?:string;
   email: string;
   token?: string;
   isLoggedIn: boolean;
