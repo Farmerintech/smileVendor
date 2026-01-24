@@ -69,7 +69,7 @@ export default function RootLayout() {
         }} />
               <Stack.Screen name="updateStoreInfo" 
         options={{
-          headerShown: true,
+          headerShown: false,
           headerShadowVisible: false,
         headerTitle: 'Store Informations',
 

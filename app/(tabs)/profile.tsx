@@ -25,6 +25,8 @@ const SignIn: React.FC = () => {
   const [loading, setLoading] = useState(false);
 const {vendor} = useAppStore()
   const store = vendor.store;
+   useStatusBar("#093131", "light-content");  
+
   const handleFormChange = (key: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
     if (error[key]) setError((prev) => ({ ...prev, [key]: "" }));
@@ -70,7 +72,6 @@ const {vendor} = useAppStore()
     }
   };
 
- useStatusBar("#093131", "light-content");  
  const {user} = useAppStore()
  return (
     <View style={{ flex: 1, backgroundColor: "#093131", paddingTop:30 }}>
@@ -107,7 +108,7 @@ const {vendor} = useAppStore()
           <AppTextBold className="text-[28px] text-white text-center mb-2">
            {store.name}
         </AppTextBold>
-        <Text className="text-white text-[10px]">ID: {store.id}</Text>
+        <Text className="text-white text-[10px]">ID:{store.id}</Text>
         </View>
        </View>
         <TouchableOpacity onPress={()=>router.push("/(screens)/account")}>

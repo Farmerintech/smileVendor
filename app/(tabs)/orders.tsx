@@ -1,6 +1,8 @@
+import { useStatusBar } from "@/hooks/statusBar";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import CreateStoreWizard from "../(screens)/storeInfo";
+import { AppText } from "../_layout";
 import { BaseURL } from "../lib/api";
 import { getUserFromToken } from "../lib/jwt";
 import { useAppStore } from "../store/useAppStore";
@@ -9,6 +11,7 @@ export default function HomePage() {
   const { vendor, setVendorStore, user } = useAppStore();
   const [loading, setLoading] = useState(true);
   const [store, setStore] = useState<any>(null); // single store object
+ useStatusBar("white", "dark-content");  
 
   // Extract user ID from token
   const User = getUserFromToken(user?.token || "");
@@ -101,7 +104,44 @@ export const RealHomeContent = ({ store }: { store: any }) => {
       <Text style={styles.subHeader}>Store: {store.name}</Text>
 
       <View style={styles.filterContainer}>
-        {STATUS_FILTERS.map((status) => (
+                {/* Time Filter */}
+                <FlatList
+                  horizontal
+                  data={STATUS_FILTERS}
+                  keyExtractor={(item) => item}
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap: 8, marginBottom: 16 }}
+                  renderItem={({ item, index }) => {
+                    const active = selectedStatus === item;
+                    return (
+                      <TouchableOpacity
+                        onPress={() => setSelectedStatus(item)}
+                        style={{
+                          paddingHorizontal: 14,
+                          height: 36,
+                          borderRadius: 18,
+                          backgroundColor: active ? "#FF6B35" : "#FFFFFF",
+                          borderWidth: 1,
+                          borderColor: active ? "#FF6B35" : "#E5E7EB",
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        <AppText
+                          style={{
+                            fontSize: 14,
+                            fontWeight: "500",
+                            color: active ? "#FFFFFF" : "#6B7280",
+                          }}
+                        >
+                          {item}
+                        </AppText>
+                      </TouchableOpacity>
+                    );
+                  }}
+                />
+        
+        {/* {STATUS_FILTERS.map((status) => (
           <TouchableOpacity
             key={status}
             style={[styles.filterBtn, selectedStatus === status && styles.filterBtnActive]}
@@ -111,7 +151,7 @@ export const RealHomeContent = ({ store }: { store: any }) => {
               {status.replace("-", " ").toUpperCase()}
             </Text>
           </TouchableOpacity>
-        ))}
+        ))} */}
       </View>
 
       {loading ? (

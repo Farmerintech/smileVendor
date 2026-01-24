@@ -155,6 +155,13 @@ export default function TabLayout() {
           tabBarIcon: ({ focused }) => renderTab(focused, 'person-outline', 'Profile'),
         }}
       />
+         {/* <Tabs.Screen
+        name="updateStorInfo"
+        options={{
+          href: null,           // 👈 hides from tab bar
+          tabBarStyle: { display: "flex" },
+        }}
+      /> */}
     </Tabs>
   );
 }

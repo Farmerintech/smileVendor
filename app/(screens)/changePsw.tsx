@@ -1,9 +1,10 @@
 import { InputFields } from "@/components/form/formInput";
 import { NotificationBar } from "@/components/NotificationBar";
+import { useStatusBar } from "@/hooks/statusBar";
 import { router } from "expo-router";
 import Joi from "joi";
 import { useState } from "react";
-import { SafeAreaView, ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { AppText, AppTextBold } from "../_layout";
 import { apiRequest, BaseURL } from "../lib/api";
 import { useAppStore } from "../store/useAppStore";
@@ -114,12 +115,13 @@ const handleSubmit = async () => {
     setLoading(false);
   }
 };
+ useStatusBar("#093131", "light-content");  
 
     const {user} = useAppStore()
     const now = new Date().getTime()
     return(
     <SafeAreaView style={{ flex: 1, backgroundColor: "#093131" }}>
-      <StatusBar barStyle="light-content" />
+      {/* <StatusBar barStyle="light-content" /> */}
        {message !== "" && showNotification && (
         <NotificationBar
           trigger={showNotification}
@@ -157,7 +159,7 @@ const handleSubmit = async () => {
           keyboardShouldPersistTaps="handled"
         >
           <AppText className="text-[20px] font-[700] text-center mb-2">
-            Hello, {user.username}
+            Hello, {user.email}
           </AppText>
           <AppText className="text-center mb-6">
             Let’s get your password changed.
