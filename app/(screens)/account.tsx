@@ -22,7 +22,7 @@ const Account: React.FC = () => {
     >
       <StatusBar backgroundColor={"#093131"} barStyle={"light-content"}/>
       
-      <Item icon="person" label={user.username} />
+      {/* <Item icon="person" label={user.username} /> */}
       <Item icon="mail" label={user.email} />
       <Item icon="key" label="Change password" onPress={()=>router.replace("/(screens)/changePsw")}/>
       <Item icon="call" label="Change number" onPress={()=>router.replace("/(screens)/changeNumber")}/>

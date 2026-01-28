@@ -150,7 +150,7 @@ const handleSubmit = async () => {
           keyboardShouldPersistTaps="handled"
         >
           <AppTextBold className="text-[20px] font-[700] text-center mb-2">
-            Hello, {user.username}
+            {/* Hello, {user.username} */}
           </AppTextBold>
           <AppText className="text-center mb-6">
             Let’s get your number chnaged

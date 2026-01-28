@@ -1,6 +1,6 @@
 import { useStatusBar } from "@/hooks/statusBar";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import CreateStoreWizard from "../(screens)/storeInfo";
 import { AppText } from "../_layout";
 import { BaseURL } from "../lib/api";
@@ -53,47 +53,91 @@ export default function HomePage() {
   }
 
   // Conditional render
-  return !store?.id ? <CreateStoreWizard /> : <RealHomeContent store={store} />;
+  return !store?.id ? <CreateStoreWizard /> : <RealHomeContent  />;
 }
 
 /* ================= REAL HOME ================= */
 const STATUS_FILTERS = ["ongoing", "in-transit", "awaiting-bike", "canceled", "completed"];
 
-export const RealHomeContent = ({ store }: { store: any }) => {
+// Frontend-friendly status filters
+      // let statusQuery = 
+
+// Map backend DB status to frontend label using switch
+const statusQuery = (status:string): string => {
+  switch (status) {
+    case "pending":
+    case "preparing":
+      return "ongoing"; // everything that is not ready/picked_up/delivered/cancelled is ongoing
+    case "ready":
+      return "awaiting-bike"; // customer waiting for rider
+    case "picked_up":
+      return "in-transit"; // rider has picked the order
+    case "delivered":
+      return "completed"; // delivered orders
+    case "cancelled":
+      return "canceled"; // cancelled orders
+    default:
+      return "ongoing"; // fallback
+  }
+};
+
+export const RealHomeContent = () => {
   const { user } = useAppStore();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>("ongoing");
   const [error, setError] = useState<string | null>(null);
+  const { vendor, setVendorStore,  } = useAppStore();
+  const [storeId, setStoreId] = useState()
+ const fetchOrders = async () => {
+  setLoading(true);
+  try {
+    const res = await fetch(`${BaseURL}/store/get_store`, {
+      headers: { Authorization: `Bearer ${user.token}` },
+    });
 
-  const fetchOrders = async (status?: string) => {
-    setLoading(true);
-    try {
-      const statusQuery = status ? `?status=${status}` : "";
-      const res = await fetch(`${BaseURL}/store/get_store/${store.id}${statusQuery}`, {
-        headers: { Authorization: `Bearer ${user?.token}` },
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.message || "Failed to fetch orders");
+    const data = await res.json();
+    const storeData = data?.data;
 
-      setOrders(data?.data || []);
-    } catch (err: any) {
-      console.error("FETCH ORDERS ERROR", err);
-      setError(err.message || "Something went wrong");
-    } finally {
+    if (!storeData) {
+      Alert.alert("No Store", "No store found for this account.");
       setLoading(false);
+      return;
     }
-  };
+
+    // Set storeId in state if needed
+    setStoreId(storeData.id);
+
+    // Use storeData.id directly instead of state
+    const staus = statusQuery(selectedStatus);
+    const ordersRes = await fetch(
+      `${BaseURL}/orders/get_store_orders/${storeData.id}`,
+      {
+        headers: { Authorization: `Bearer ${user.token}` },
+      }
+    );
+
+    const ordersData = await ordersRes.json();
+    if (!ordersRes.ok) throw new Error(ordersData?.message || "Failed to fetch orders");
+    setOrders(ordersData?.data || []);
+  } catch (err: any) {
+    console.error("FETCH ORDERS ERROR", err);
+    setError(err.message || "Something went wrong");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
-    fetchOrders(selectedStatus);
+    fetchOrders();
   }, [selectedStatus]);
 
   const renderOrderItem = ({ item }: { item: any }) => (
     <View style={styles.orderCard}>
       <Text style={styles.orderTitle}>Order #{item.id}</Text>
-      <Text>Customer: {item.customerName}</Text>
-      <Text>Total: ${item.totalAmount.toFixed(2)}</Text>
+      <Text>Customer: {item?.customerName}</Text>
+      <Text>Total: ${item?.totalAmount}</Text>
       <Text>Status: {item.status}</Text>
       <Text>Date: {new Date(item.createdAt).toLocaleString()}</Text>
     </View>
@@ -101,7 +145,7 @@ export const RealHomeContent = ({ store }: { store: any }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.subHeader}>Store: {store.name}</Text>
+      <Text style={styles.subHeader}>Store: {vendor.store.name}</Text>
 
       <View style={styles.filterContainer}>
                 {/* Time Filter */}
