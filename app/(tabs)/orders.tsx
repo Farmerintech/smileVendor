@@ -1,3 +1,4 @@
+import { RejectionReasonModal } from "@/components/rejectionNote";
 import { useStatusBar } from "@/hooks/statusBar";
 import { useEffect, useState } from "react";
 import {
@@ -17,13 +18,14 @@ import { BaseURL } from "../lib/api";
 import { getUserFromToken } from "../lib/jwt";
 import { useAppStore } from "../store/useAppStore";
 
+/* ================= HOME ================= */
 export default function HomePage() {
-  const { vendor, setVendorStore, user } = useAppStore();
+  const { setVendorStore, user } = useAppStore();
   const [loading, setLoading] = useState(true);
-  const [store, setStore] = useState<any>(null); // single store object
+  const [store, setStore] = useState<any>(null);
+
   useStatusBar("white", "dark-content");
 
-  // Extract user ID from token
   const User = getUserFromToken(user?.token || "");
 
   useEffect(() => {
@@ -35,17 +37,11 @@ export default function HomePage() {
         const res = await fetch(`${BaseURL}/store/get_store`, {
           headers: { Authorization: `Bearer ${user?.token}` },
         });
-
         const data = await res.json();
-        const storeData = data?.data || null;
-        // setStoreData(storeData)
-        setStore(storeData); // local state
-        if (storeData) {
-          await setVendorStore(storeData); // sync with app store
-        }
+        setStore(data?.data || null);
+        if (data?.data) await setVendorStore(data.data);
       } catch (err) {
         console.error("FETCH STORE ERROR", err);
-        setStore(null);
       } finally {
         setLoading(false);
       }
@@ -57,59 +53,60 @@ export default function HomePage() {
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color={"orange"} />
+        <ActivityIndicator size="large" color="orange" />
       </View>
     );
   }
 
-  // Conditional render
   return !store?.id ? <CreateStoreWizard /> : <RealHomeContent />;
 }
 
 /* ================= REAL HOME ================= */
+
 const STATUS_FILTERS = [
-   "ongoing",
+  "ongoing",
   "preparing",
   "awaiting-bike",
   "picked-up",
-  "canceled",
-  "completed"
+  "rejected",
+  "completed",
 ];
 
 export const RealHomeContent = () => {
   const { user, vendor } = useAppStore();
+
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState<string>("ongoing");
   const [error, setError] = useState<string | null>(null);
-  const [stData, setStoreData] = useState<any>()
+  const [selectedStatus, setSelectedStatus] = useState("ongoing");
+  const [storeData, setStoreData] = useState<any>(null);
+
+  // Reject modal state
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   const fetchOrders = async () => {
-    // Alert.alert(selectedStatus)
     setLoading(true);
+    setError(null);
+
     try {
       const res = await fetch(`${BaseURL}/store/get_store`, {
         headers: { Authorization: `Bearer ${user.token}` },
       });
 
-      const data = await res.json();
-      const storeData = data?.data;
-      setStoreData(storeData)
-      if (!storeData) {
-        Alert.alert("No Store", "No store found for this account.");
-        setLoading(false);
-        return;
-      }
+      const store = (await res.json())?.data;
+      if (!store) throw new Error("Store not found");
+
+      setStoreData(store);
 
       const ordersRes = await fetch(
-        `${BaseURL}/orders/get_orders_by_storeId/${storeData.id}/${selectedStatus}`,
-        {
-          headers: { Authorization: `Bearer ${user.token}` },
-        }
+        `${BaseURL}/orders/get_orders_by_storeId/${store.id}/${selectedStatus}`,
+        { headers: { Authorization: `Bearer ${user.token}` } }
       );
 
       const ordersData = await ordersRes.json();
-      if (!ordersRes.ok) throw new Error(ordersData?.message || "Failed to fetch orders");
+      if (!ordersRes.ok)
+        throw new Error(ordersData?.message || "Failed to fetch orders");
 
       setOrders(ordersData?.data || []);
     } catch (err: any) {
@@ -124,95 +121,121 @@ export const RealHomeContent = () => {
     fetchOrders();
   }, [selectedStatus]);
 
-  const updateOrderStatus = async (orderId: string, status: string) => {
+  const updateOrderStatus = async (
+    orderId: string,
+    status: string,
+    rejectionNote?: string,
+    isRejected?:boolean
+  ) => {
     try {
       setLoading(true);
-      const res = await fetch(`${BaseURL}/orders/update_order/${stData.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`,
-        },
-        body: JSON.stringify({ orderId, status }),
-      });
+      const res = await fetch(
+        `${BaseURL}/orders/update_order/${storeData.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user.token}`,
+          },
+          body: JSON.stringify({ orderId, status, rejectionNote, isRejected }),
+        }
+      );
 
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Update failed");
 
-      fetchOrders(); // Refresh orders after update
+      Alert.alert(data.message);
+      fetchOrders();
     } catch (err: any) {
-      console.error("UPDATE ERROR", err);
       Alert.alert("Error", err.message || "Failed to update order");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleRejectSubmit = (reason: string) => {
+    if (!selectedOrderId) return;
+    setShowRejectModal(false);
+    updateOrderStatus(selectedOrderId, "rejected", reason, true);
+    setSelectedOrderId(null);
+  };
 
-const renderOrderItem = ({ item }: { item: any }) => {
-  const isOngoing = item.orderStatusVendor === "ongoing";
+  const renderOrderItem = ({ item }: { item: any }) => {
+    const isOngoing = item.orderStatusVendor === "ongoing";
+    const isPreparing = item.orderStatusVendor === "preparing";
+    const isAwaiting = item.orderStatusVendor === "awaiting-bike";
 
-  return (
-    <View style={styles.orderCard}>
-      {/* Map through each product in the order */}
-      {item.items.map((product: any, index: number) => (
-        <View 
-          key={index} 
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: 12,
-          }}
-        >
-          {/* Product Image */}
-          <Image
-            source={{ uri: product.imageUrl }}
-            style={{ width: 60, height: 60, borderRadius: 8, marginRight: 12 }}
-          />
-
-          {/* Product Details */}
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontWeight: "600", fontSize: 16 }}>{product.name}</Text>
-            <Text>Product ID: {product.productId}</Text>
-            <Text>Qty: {product.quantity}</Text>
-            <Text>Price: ₦{product.price}</Text>
-            {product.vendorNote ? <Text>Vendor Note: {product.vendorNote}</Text> : null}
-            {product.riderNote ? <Text>Rider Note: {product.riderNote}</Text> : null}
+    return (
+      <View style={styles.orderCard}>
+        {item.items.map((product: any, index: number) => (
+          <View
+            key={index}
+            style={{ flexDirection: "row", marginBottom: 12 }}
+          >
+            <Image
+              source={{ uri: product.imageUrl }}
+              style={{ width: 60, height: 60, borderRadius: 8, marginRight: 12 }}
+            />
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontWeight: "600" }}>{product.name}</Text>
+              <Text>Qty: {product.quantity}</Text>
+              <Text>₦{product.price}</Text>
+            </View>
           </View>
-        </View>
-      ))}
+        ))}
 
-      {/* Order Info */}
-      <Text>Status: {item.orderStatusVendor}</Text>
-      <Text>Total: ₦{item.totalAmount}</Text>
-      <Text>Date: {new Date(item.createdAt).toLocaleString()}</Text>
+        <Text>Status: {item.orderStatusVendor}</Text>
+        {item.isRejected && <Text>Rejection Note:{item.rejectionNote}</Text>}
+        <Text>Total: ₦{item.totalAmount}</Text>
 
-      {/* Action buttons for ongoing orders */}
-      {isOngoing && (
-        <View style={styles.actionRow}>
-          <Pressable
-            style={[styles.actionBtn, styles.acceptBtn]}
-            onPress={() => updateOrderStatus(item.id, "preparing")}
-          >
-            <Text style={styles.btnText}>Accept Order</Text>
-          </Pressable>
+        {isOngoing && (
+          <View style={styles.actionRow}>
+            <Pressable
+              style={[styles.actionBtn, styles.acceptBtn]}
+              onPress={() => updateOrderStatus(item.id, "preparing")}
+            >
+              <Text style={styles.btnText}>Accept Order</Text>
+            </Pressable>
 
-          <Pressable
-            style={[styles.actionBtn, styles.rejectBtn]}
-            onPress={() => updateOrderStatus(item.id, "canceled_by_vendor")}
-          >
-            <Text style={styles.btnText}>Reject Order</Text>
-          </Pressable>
-        </View>
-      )}
-    </View>
-  );
-};
+            <Pressable
+              style={[styles.actionBtn, styles.rejectBtn]}
+              onPress={() => {
+                setSelectedOrderId(item.id);
+                setShowRejectModal(true);
+              }}
+            >
+              <Text style={styles.btnText}>Reject Order</Text>
+            </Pressable>
+          </View>
+        )}
+
+        {isPreparing && (
+          <View style={styles.actionRow}>
+            <Pressable
+              style={[styles.actionBtn, styles.acceptBtn]}
+              onPress={() => updateOrderStatus(item.id, "awaiting-bike")}
+            >
+              <Text style={styles.btnText}>Ready for Pickup</Text>
+            </Pressable>
+          </View>
+        )}
+
+        {isAwaiting && (
+          <View style={styles.actionRow}>
+            <Pressable
+              style={[styles.actionBtn, styles.acceptBtn]}
+              onPress={() => updateOrderStatus(item.id, "picked-up")}
+            >
+              <Text style={styles.btnText}>Picked Up</Text>
+            </Pressable>
+          </View>
+        )}
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.subHeader}>Store: {vendor?.store?.name}</Text>
-
       <FlatList
         horizontal
         data={STATUS_FILTERS}
@@ -256,8 +279,10 @@ const renderOrderItem = ({ item }: { item: any }) => {
         </View>
       ) : error ? (
         <Text style={{ color: "red", marginTop: 20 }}>{error}</Text>
-      ) : orders?.length === 0 ? (
-        <Text style={{ marginTop: 20, textAlign: "center" }}>No orders found for this status.</Text>
+      ) : orders.length === 0 ? (
+        <Text style={{ marginTop: 20, textAlign: "center" }}>
+          No orders found for this status.
+        </Text>
       ) : (
         <FlatList
           data={orders}
@@ -267,11 +292,18 @@ const renderOrderItem = ({ item }: { item: any }) => {
           contentContainerStyle={{ paddingBottom: 100 }}
         />
       )}
+
+      <RejectionReasonModal
+        visible={showRejectModal}
+        onClose={() => setShowRejectModal(false)}
+        onSubmit={handleRejectSubmit}
+      />
     </View>
   );
 };
 
 /* ================= STYLES ================= */
+
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: "#fff" },
   subHeader: { fontSize: 16, fontWeight: "600", marginBottom: 12, color: "#555" },
@@ -279,11 +311,9 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     backgroundColor: "#f9f9f9",
-    // borderRadius: 12,
     borderWidth: 1,
     borderColor: "#ddd",
   },
-  orderTitle: { fontWeight: "700", fontSize: 16, marginBottom: 4 },
   actionRow: {
     flexDirection: "row",
     marginTop: 12,
