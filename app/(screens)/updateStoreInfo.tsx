@@ -69,7 +69,7 @@ export default function StoreProfile() {
           Alert.alert("No Store", "No store found for this account.");
           return;
         }
-
+              (storeData)
         setStore(storeData);
         setForm({
           name: storeData.name ?? "",
